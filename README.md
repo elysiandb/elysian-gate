@@ -6,7 +6,7 @@
 
 ---
 
-### ✨ Key Features
+### Key Features
 
 * **Automatic Cluster Bootstrapping** — Optionally launch all ElysianDB nodes at startup.
 * **Node Discovery Mode** — Detect and monitor already running nodes in real time.
@@ -82,13 +82,13 @@ Node 2 [HTTP 0.0.0.0:8091 | TCP 0.0.0.0:8072] : 🔴 HTTP down | 🟢 TCP up
 
 ---
 
-### 🧑‍💻 Author
+### Author
 
 **Taymour**
 Creator of [ElysianDB](https://github.com/elysiandb/elysiandb)
 
 ---
 
-### 📜 License
+### License
 
 MIT License © 2025
