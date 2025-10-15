@@ -1,0 +1,11 @@
+nodes:
+  - "./elysiandb/config/elysian-1.yaml"
+  - "./elysiandb/config/elysian-2.yaml"
+  - "./elysiandb/config/elysian-3.yaml"
+  - "./elysiandb/config/elysian-4.yaml"
+
+gateway:
+  startsNodes: false
+  http:
+    host: "0.0.0.0"
+    port: 8899
