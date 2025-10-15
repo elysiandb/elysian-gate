@@ -1,18 +1,20 @@
-# (Under construction) ElysianGate — The Smart Gateway for ElysianDB Clusters
+# ElysianGate — Smart Gateway and Load Balancer for ElysianDB Clusters
 
 ### Overview
 
-**ElysianGate** is a lightweight, high-performance gateway designed to orchestrate multiple **ElysianDB** nodes. It provides smart request routing, node health monitoring, and seamless startup or discovery of distributed key-value stores.
+**ElysianGate** is a lightweight, high-performance gateway designed to orchestrate and balance multiple **ElysianDB** nodes. It manages request routing, replication, and real-time monitoring, enabling distributed key-value clusters to behave as one unified system.
 
 ---
 
 ### Key Features
 
 * **Automatic Cluster Bootstrapping** — Optionally launch all ElysianDB nodes at startup.
-* **Node Discovery Mode** — Detect and monitor already running nodes in real time.
-* **Dual Transport Awareness** — Handles both **HTTP** and **TCP** connections per node.
-* **Real-Time Health Checks** — Continuously monitors all nodes and logs status changes instantly.
-* **Zero Configuration** — Simple YAML-based setup.
+* **Intelligent Read/Write Routing** — Routes writes to the master and distributes reads across fresh slaves.
+* **Replication Engine** — Synchronizes recent write operations across slave nodes for consistency.
+* **Real-Time Health Monitoring** — Continuously checks node status via HTTP and TCP.
+* **Dual Transport Awareness** — Supports both **HTTP** and **TCP** endpoints per node.
+* **Zero Configuration** — Simple YAML-based setup for instant startup.
+* **k6 Benchmark Suite** — Included for stress and performance testing.
 
 ---
 
@@ -20,10 +22,22 @@
 
 ```yaml
 nodes:
-  - "./elysiandb/config/elysian-1.yaml"
-  - "./elysiandb/config/elysian-2.yaml"
-  - "./elysiandb/config/elysian-3.yaml"
-  - "./elysiandb/config/elysian-4.yaml"
+  node1:
+    role: master
+    http: { enabled: true, host: 0.0.0.0, port: 8090 }
+    tcp:  { enabled: true, host: 0.0.0.0, port: 8890 }
+  node2:
+    role: slave
+    http: { enabled: true, host: 0.0.0.0, port: 8091 }
+    tcp:  { enabled: true, host: 0.0.0.0, port: 8891 }
+  node3:
+    role: slave
+    http: { enabled: true, host: 0.0.0.0, port: 8092 }
+    tcp:  { enabled: true, host: 0.0.0.0, port: 8892 }
+  node4:
+    role: slave
+    http: { enabled: true, host: 0.0.0.0, port: 8093 }
+    tcp:  { enabled: true, host: 0.0.0.0, port: 8893 }
 
 gateway:
   startsNodes: false
@@ -42,13 +56,13 @@ gateway:
 go run . --config elysiangate.yaml
 ```
 
-#### Optional: Start Fresh
+#### Start Fresh (clear previous data)
 
 ```bash
 go run . --config elysiangate.yaml --clear
 ```
 
-#### Start the ElysianDB Cluster Manually
+#### Launch the Cluster Manually
 
 ```bash
 make cluster
@@ -58,10 +72,11 @@ make cluster
 
 ### Architecture
 
-* **Configuration Layer** — Parses YAML and loads gateway & node settings.
-* **Cluster Manager** — Keeps an in-memory registry of all nodes with HTTP/TCP health.
-* **Monitoring Engine** — Pings each node periodically, logging state transitions.
-* **Gateway Server** — A minimal **fasthttp** service handling API and orchestration requests.
+* **Configuration Loader** — Parses YAML and loads gateway and node definitions.
+* **Cluster Manager** — Maintains in-memory registry of node states and roles.
+* **Replication Balancer** — Tracks pending write operations and synchronizes them with slaves.
+* **Monitoring Engine** — Performs continuous health checks and logs node status changes.
+* **HTTP Gateway Server** — Built with **fasthttp** for ultra-low latency routing.
 
 ---
 
@@ -69,8 +84,8 @@ make cluster
 
 ```
 15:42:03
-Node 1 [HTTP 0.0.0.0:8090 | TCP 0.0.0.0:8071] : 🟢 HTTP up | 🟢 TCP up
-Node 2 [HTTP 0.0.0.0:8091 | TCP 0.0.0.0:8072] : 🔴 HTTP down | 🟢 TCP up
+Node master (node1) [HTTP 0.0.0.0:8090 | TCP 0.0.0.0:8890] : 🟢 HTTP up | 🟢 TCP up
+Node slave (node2) [HTTP 0.0.0.0:8091 | TCP 0.0.0.0:8891] : 🔴 HTTP down | 🟢 TCP up
 ───────────────────────────────────────────────
 ```
 
@@ -78,17 +93,5 @@ Node 2 [HTTP 0.0.0.0:8091 | TCP 0.0.0.0:8072] : 🔴 HTTP down | 🟢 TCP up
 
 ### Philosophy
 
-> *ElysianGate aims to make distributed ElysianDB clusters effortless — minimal setup, instant observability, and full control over performance and reliability.*
+> *ElysianGate turns distributed ElysianDB clusters into a single, coherent system — effortless setup, instant visibility, and consistent performance by design.*
 
----
-
-### Author
-
-**Taymour**
-Creator of [ElysianDB](https://github.com/elysiandb/elysiandb)
-
----
-
-### License
-
-MIT License © 2025

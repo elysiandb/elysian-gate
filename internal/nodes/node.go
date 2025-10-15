@@ -22,7 +22,8 @@ type Transport struct {
 }
 
 type Node struct {
-	ID   int
+	Name string
+	Role string
 	HTTP Transport
 	TCP  Transport
 }
@@ -37,21 +38,20 @@ var ElysianCluster *Cluster
 func Init() {
 	ElysianCluster = &Cluster{}
 	cfg := configuration.Config
-	for i, path := range cfg.Nodes {
-		elyCfg, err := configuration.ReadElysianConfig(path)
-		if err != nil {
-			continue
-		}
+	i := 0
+	for name, nodeCfg := range cfg.Nodes {
+		i++
 		ElysianCluster.Nodes = append(ElysianCluster.Nodes, Node{
-			ID: i + 1,
+			Name: name,
+			Role: nodeCfg.Role,
 			HTTP: Transport{
-				Host: elyCfg.Server.HTTP.Host,
-				Port: elyCfg.Server.HTTP.Port,
+				Host: nodeCfg.HTTP.Host,
+				Port: nodeCfg.HTTP.Port,
 				Up:   false,
 			},
 			TCP: Transport{
-				Host: elyCfg.Server.TCP.Host,
-				Port: elyCfg.Server.TCP.Port,
+				Host: nodeCfg.TCP.Host,
+				Port: nodeCfg.TCP.Port,
 				Up:   false,
 			},
 		})
@@ -59,16 +59,16 @@ func Init() {
 
 	if cfg.Gateway.StartsNodes {
 		fmt.Printf("Starting %d ElysianDB nodes...\n", len(cfg.Nodes))
-		for i, path := range cfg.Nodes {
+		for _, n := range ElysianCluster.Nodes {
 			bin := filepath.Join("elysiandb", "bin", "elysiandb")
-			cmd := exec.Command(bin, "--config", path)
+			cmd := exec.Command(bin, "--http", fmt.Sprintf("%s:%d", n.HTTP.Host, n.HTTP.Port), "--tcp", fmt.Sprintf("%s:%d", n.TCP.Host, n.TCP.Port))
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			if err := cmd.Start(); err != nil {
-				fmt.Printf("Failed to start node %d: %v\n", i+1, err)
+				fmt.Printf("Failed to start node %s: %v\n", n.Name, err)
 				continue
 			}
-			fmt.Printf(" → Node %d started with config: %s\n", i+1, path)
+			fmt.Printf(" → Node %s started on HTTP %s:%d | TCP %s:%d\n", n.Name, n.HTTP.Host, n.HTTP.Port, n.TCP.Host, n.TCP.Port)
 			time.Sleep(200 * time.Millisecond)
 		}
 		fmt.Println("\nAll nodes are up and running!")
@@ -96,8 +96,9 @@ func (c *Cluster) monitor() {
 			if tcpUp {
 				tcpState = "🟢 TCP up"
 			}
-			output += fmt.Sprintf("Node %d [HTTP %s:%d | TCP %s:%d] : %s | %s\n",
-				c.Nodes[i].ID,
+			output += fmt.Sprintf("Node %s (%s) [HTTP %s:%d | TCP %s:%d] : %s | %s\n",
+				c.Nodes[i].Name,
+				c.Nodes[i].Role,
 				c.Nodes[i].HTTP.Host, c.Nodes[i].HTTP.Port,
 				c.Nodes[i].TCP.Host, c.Nodes[i].TCP.Port,
 				httpState, tcpState)
