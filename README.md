@@ -1,10 +1,4 @@
-# ElysianGate — The Smart Gateway for ElysianDB Clusters
-
-<p align="center">
-  <img src="docs/logo.png" alt="ElysianGate Logo" width="180"/>
-</p>
-
----
+# (Under construction) ElysianGate — The Smart Gateway for ElysianDB Clusters
 
 ### Overview
 
