@@ -34,7 +34,7 @@ gateway:
 
 ---
 
-### 🚀 Usage
+### Usage
 
 #### Start the Gateway
 
@@ -56,7 +56,7 @@ make cluster
 
 ---
 
-### 🧠 Architecture
+### Architecture
 
 * **Configuration Layer** — Parses YAML and loads gateway & node settings.
 * **Cluster Manager** — Keeps an in-memory registry of all nodes with HTTP/TCP health.
