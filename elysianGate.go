@@ -2,12 +2,12 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"time"
 
 	"github.com/elysiandb/elysian-gate/internal/boot"
 	"github.com/elysiandb/elysian-gate/internal/configuration"
+	"github.com/elysiandb/elysian-gate/internal/logger"
 	"github.com/elysiandb/elysian-gate/internal/nodes"
 )
 
@@ -16,12 +16,10 @@ func main() {
 	configFile := flag.String("config", "elysiangate.yaml", "Path to gateway config file")
 	flag.Parse()
 
-	fmt.Println("\033[1;36m╔══════════════════════════════════════════════╗")
-	fmt.Println("║               ElysianGate Launcher           ║")
-	fmt.Println("╚══════════════════════════════════════════════╝\033[0m")
+	logger.Info("Starting ElysianGate...")
 
 	if *clear {
-		fmt.Println("Clearing previous data...")
+		logger.Info("Clearing previous data...")
 		os.RemoveAll("/tmp/elysian*")
 		time.Sleep(300 * time.Millisecond)
 	}
@@ -31,10 +29,9 @@ func main() {
 	nodes.Init()
 	boot.BootSyncer()
 
-	fmt.Println("───────────────────────────────────────────────")
-	fmt.Println(" Gateway is ready to orchestrate the cluster  ")
-	fmt.Println("───────────────────────────────────────────────")
-
+	logger.Info("───────────────────────────────────────────────")
+	logger.Info(" Gateway is ready to orchestrate the cluster  ")
+	logger.Info("───────────────────────────────────────────────")
 	nodes.ElysianCluster.StartMonitoring()
 
 	boot.InitHTTP()

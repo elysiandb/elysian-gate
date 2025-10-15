@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/elysiandb/elysian-gate/internal/logger"
 	"gopkg.in/yaml.v3"
 )
 
@@ -27,6 +28,7 @@ type ElysianGateConfig struct {
 			Host string `yaml:"host"`
 			Port int    `yaml:"port"`
 		} `yaml:"http"`
+		SynchronizationInterval int `yaml:"synchronizationInterval"`
 	} `yaml:"gateway"`
 }
 
@@ -47,15 +49,15 @@ func ReadElysianConfig(path string) (ElysianGateConfig, error) {
 func LoadConfig(configFile *string) error {
 	data, err := os.ReadFile(*configFile)
 	if err != nil {
-		fmt.Printf("Failed to read config file: %v\n", err)
+		logger.Error(fmt.Sprintf("Failed to read config file: %v\n", err))
 		return err
 	}
 	if err := yaml.Unmarshal(data, &Config); err != nil {
-		fmt.Printf("Invalid YAML config: %v\n", err)
+		logger.Error(fmt.Sprintf("Invalid YAML config: %v\n", err))
 		return err
 	}
 	if len(Config.Nodes) == 0 {
-		fmt.Println("No nodes defined in config file.")
+		logger.Error("No nodes defined in config file.")
 		return fmt.Errorf("no nodes defined")
 	}
 	return nil
