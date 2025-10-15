@@ -2,7 +2,7 @@
 
 ### Overview
 
-**ElysianGate** is a lightweight, high-performance gateway designed to orchestrate and balance multiple **ElysianDB** nodes. It manages request routing, replication, and real-time monitoring, enabling distributed key-value clusters to behave as one unified system.
+**ElysianGate** is a lightweight, high-performance gateway designed to orchestrate and balance multiple **ElysianDB** nodes. It manages request routing, replication, and real-time monitoring, enabling distributed key-value clusters to behave as one unified system (only works for ElysianDB automatic rest api mode, the key-value mode will be implemented soon).
 
 ---
 
