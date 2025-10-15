@@ -29,6 +29,7 @@ func main() {
 	configuration.LoadConfig(configFile)
 
 	nodes.Init()
+	boot.BootSyncer()
 
 	fmt.Println("───────────────────────────────────────────────")
 	fmt.Println(" Gateway is ready to orchestrate the cluster  ")

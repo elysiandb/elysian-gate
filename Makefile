@@ -1,4 +1,4 @@
-.PHONY: clear cluster stop restart
+.PHONY: clear cluster stop restart api_benchmark
 
 BIN=./elysiandb/bin/elysiandb
 CONF_DIR=./elysiandb/config
@@ -31,3 +31,6 @@ restart:
 	@sleep 2
 	@$(MAKE) cluster
 	@echo "♻️  Restart complete."
+
+api_benchmark:
+	BASE_URL=http://localhost:8899 KEYS=5000 VUS=200 DURATION=10s k6 run elysian_api_k6.js

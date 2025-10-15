@@ -7,23 +7,20 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type ElysianConfig struct {
-	Server struct {
-		HTTP struct {
-			Enabled bool   `yaml:"enabled"`
-			Host    string `yaml:"host"`
-			Port    int    `yaml:"port"`
-		} `yaml:"http"`
-		TCP struct {
-			Enabled bool   `yaml:"enabled"`
-			Host    string `yaml:"host"`
-			Port    int    `yaml:"port"`
-		} `yaml:"tcp"`
-	} `yaml:"server"`
+type Transport struct {
+	Enabled bool   `yaml:"enabled"`
+	Host    string `yaml:"host"`
+	Port    int    `yaml:"port"`
+}
+
+type Node struct {
+	Role string    `yaml:"role"`
+	HTTP Transport `yaml:"http"`
+	TCP  Transport `yaml:"tcp"`
 }
 
 type ElysianGateConfig struct {
-	Nodes   []string `yaml:"nodes"`
+	Nodes   map[string]Node `yaml:"nodes"`
 	Gateway struct {
 		StartsNodes bool `yaml:"startsNodes"`
 		HTTP        struct {
@@ -35,8 +32,8 @@ type ElysianGateConfig struct {
 
 var Config ElysianGateConfig
 
-func ReadElysianConfig(path string) (ElysianConfig, error) {
-	var cfg ElysianConfig
+func ReadElysianConfig(path string) (ElysianGateConfig, error) {
+	var cfg ElysianGateConfig
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return cfg, err
