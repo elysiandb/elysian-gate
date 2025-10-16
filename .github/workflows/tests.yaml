@@ -21,7 +21,8 @@ jobs:
 
       - name: Run unit tests with coverage
         run: |
-          go test ./internal/... -race -coverprofile=coverage.out -covermode=atomic
+          COVERPKG=$(go list ./internal/... | paste -sd, -)
+          go test ./tests/... -race -coverpkg=$COVERPKG -coverprofile=coverage.out -covermode=atomic
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
