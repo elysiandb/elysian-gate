@@ -1,0 +1,79 @@
+[INFO] 2025-10-16 11:12:23 trying read from node m1
+[INFO] 2025-10-16 11:12:23 trying read from node m1
+[ERROR] 2025-10-16 11:12:23 read from node m1 failed: <nil>
+[ERROR] 2025-10-16 11:12:23 no master node available for write
+[ERROR] 2025-10-16 11:12:23 write to master failed: forward error: Post "http://:0/api": dial tcp :0: connect: connection refused
+[INFO] 2025-10-16 11:14:38 trying read from node m1
+[INFO] 2025-10-16 11:14:38 trying read from node m1
+[ERROR] 2025-10-16 11:14:38 read from node m1 failed: <nil>
+[ERROR] 2025-10-16 11:14:38 no master node available for write
+[ERROR] 2025-10-16 11:14:38 write to master failed: forward error: Post "http://:0/api": dial tcp :0: connect: connection refused
+[INFO] 2025-10-16 11:17:24 trying read from node m1
+[INFO] 2025-10-16 11:17:24 trying read from node m1
+[ERROR] 2025-10-16 11:17:24 read from node m1 failed: <nil>
+[ERROR] 2025-10-16 11:17:24 no master node available for write
+[ERROR] 2025-10-16 11:17:24 write to master failed: forward error: Post "http://:0/api": dial tcp :0: connect: connection refused
+[INFO] 2025-10-16 11:19:16 trying read from node m1
+[INFO] 2025-10-16 11:19:16 trying read from node m1
+[ERROR] 2025-10-16 11:19:16 read from node m1 failed: <nil>
+[ERROR] 2025-10-16 11:19:16 no master node available for write
+[ERROR] 2025-10-16 11:19:16 write to master failed: forward error: Post "http://:0/api": dial tcp :0: connect: connection refused
+[INFO] 2025-10-16 11:19:30 trying read from node m1
+[INFO] 2025-10-16 11:19:30 trying read from node m1
+[ERROR] 2025-10-16 11:19:30 read from node m1 failed: <nil>
+[ERROR] 2025-10-16 11:19:30 no master node available for write
+[ERROR] 2025-10-16 11:19:30 write to master failed: forward error: Post "http://:0/api": dial tcp :0: connect: connection refused
+[INFO] 2025-10-16 11:22:08 trying read from node m1
+[INFO] 2025-10-16 11:22:08 trying read from node m1
+[ERROR] 2025-10-16 11:22:08 read from node m1 failed: <nil>
+[ERROR] 2025-10-16 11:22:08 no master node available for write
+[ERROR] 2025-10-16 11:22:08 write to master failed: forward error: Post "http://:0/api": dial tcp :0: connect: connection refused
+[INFO] 2025-10-16 11:22:55 trying read from node m1
+[INFO] 2025-10-16 11:22:55 trying read from node m1
+[ERROR] 2025-10-16 11:22:55 read from node m1 failed: <nil>
+[ERROR] 2025-10-16 11:22:55 no master node available for write
+[ERROR] 2025-10-16 11:22:55 write to master failed: forward error: Post "http://:0/api": dial tcp :0: connect: connection refused
+[INFO] 2025-10-16 11:30:27 trying read from node m1
+[ERROR] 2025-10-16 11:30:27 read from node m1 failed: <nil>
+[INFO] 2025-10-16 11:30:27 trying read from node m1
+[ERROR] 2025-10-16 11:30:27 no master node available for write
+[INFO] 2025-10-16 11:30:31 trying read from node m1
+[ERROR] 2025-10-16 11:30:31 read from node m1 failed: <nil>
+[INFO] 2025-10-16 11:30:31 trying read from node m1
+[ERROR] 2025-10-16 11:30:31 no master node available for write
+[ERROR] 2025-10-16 11:30:31 write to master failed: forward error: Post "http://:0/api": dial tcp :0: connect: connection refused
+[INFO] 2025-10-16 11:38:35 trying read from node m1
+[ERROR] 2025-10-16 11:38:35 read from node m1 failed: <nil>
+[INFO] 2025-10-16 11:38:35 trying read from node m1
+[ERROR] 2025-10-16 11:38:35 no master node available for write
+[ERROR] 2025-10-16 11:38:35 write to master failed: forward error: Post "http://:0/api": dial tcp :0: connect: connection refused
+[INFO] 2025-10-16 11:50:52 trying read from node m1
+[ERROR] 2025-10-16 11:50:52 read from node m1 failed: <nil>
+[INFO] 2025-10-16 11:50:52 trying read from node m1
+[ERROR] 2025-10-16 11:50:52 no master node available for write
+[ERROR] 2025-10-16 11:50:52 write to master failed: forward error: Post "http://:0/api": dial tcp :0: connect: connection refused
+[INFO] 2025-10-16 11:54:56 trying read from node m1
+[ERROR] 2025-10-16 11:54:56 read from node m1 failed: <nil>
+[INFO] 2025-10-16 11:54:56 trying read from node m1
+[ERROR] 2025-10-16 11:54:56 no master node available for write
+[ERROR] 2025-10-16 11:54:56 write to master failed: forward error: Post "http://:0/api": dial tcp :0: connect: connection refused
+[INFO] 2025-10-16 11:55:01 trying read from node m1
+[ERROR] 2025-10-16 11:55:01 read from node m1 failed: <nil>
+[INFO] 2025-10-16 11:55:01 trying read from node m1
+[ERROR] 2025-10-16 11:55:01 no master node available for write
+[ERROR] 2025-10-16 11:55:01 write to master failed: forward error: Post "http://:0/api": dial tcp :0: connect: connection refused
+[INFO] 2025-10-16 11:56:05 trying read from node m1
+[ERROR] 2025-10-16 11:56:05 read from node m1 failed: <nil>
+[INFO] 2025-10-16 11:56:05 trying read from node m1
+[ERROR] 2025-10-16 11:56:05 no master node available for write
+[ERROR] 2025-10-16 11:56:05 write to master failed: forward error: Post "http://:0/api": dial tcp :0: connect: connection refused
+[INFO] 2025-10-16 11:57:50 trying read from node m1
+[ERROR] 2025-10-16 11:57:50 read from node m1 failed: <nil>
+[INFO] 2025-10-16 11:57:50 trying read from node m1
+[ERROR] 2025-10-16 11:57:50 no master node available for write
+[ERROR] 2025-10-16 11:57:50 write to master failed: forward error: Post "http://:0/api": dial tcp :0: connect: connection refused
+[INFO] 2025-10-16 11:59:48 trying read from node m1
+[ERROR] 2025-10-16 11:59:48 read from node m1 failed: <nil>
+[INFO] 2025-10-16 11:59:48 trying read from node m1
+[ERROR] 2025-10-16 11:59:48 no master node available for write
+[ERROR] 2025-10-16 11:59:48 write to master failed: forward error: Post "http://:0/api": dial tcp :0: connect: connection refused
