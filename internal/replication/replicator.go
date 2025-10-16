@@ -3,6 +3,7 @@ package replication
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/elysiandb/elysian-gate/internal/forward"
@@ -16,9 +17,12 @@ func ReplicateMasterToNode(master *global.Node, node *global.Node) error {
 	if err != nil {
 		return err
 	}
-	for _, t := range types {
-		err := resetNodeEntity(node, t)
-		if err != nil {
+	for _, raw := range types {
+		t := sanitizeType(raw)
+		if t == "" {
+			continue
+		}
+		if err := resetNodeEntity(node, t); err != nil {
 			return err
 		}
 		entities, err := listNodeEntities(master, t)
@@ -26,8 +30,7 @@ func ReplicateMasterToNode(master *global.Node, node *global.Node) error {
 			return err
 		}
 		for _, entity := range entities {
-			err := sendEntityToNode(entity, node, t)
-			if err != nil {
+			if err := sendEntityToNode(entity, node, t); err != nil {
 				return err
 			}
 		}
@@ -36,10 +39,10 @@ func ReplicateMasterToNode(master *global.Node, node *global.Node) error {
 }
 
 func listNodeEntityTypes(node *global.Node) ([]string, error) {
-	url := fmt.Sprintf("http://%s:%d/kv/api:entity:types:list", node.HTTP.Host, node.HTTP.Port)
-	logger.Info("Listing entity types from " + url)
+	urlStr := fmt.Sprintf("http://%s:%d/kv/api:entity:types:list", node.HTTP.Host, node.HTTP.Port)
+	logger.Info("Listing entity types from " + urlStr)
 
-	status, body, err := forward.ForwardRequest("GET", url, "")
+	status, body, err := forward.ForwardRequest("GET", urlStr, "")
 	if err != nil || status >= 300 {
 		return nil, err
 	}
@@ -51,22 +54,25 @@ func listNodeEntityTypes(node *global.Node) ([]string, error) {
 	if err := json.Unmarshal([]byte(body), &data); err != nil {
 		return nil, err
 	}
-
 	if data.Value == "" {
 		return []string{}, nil
 	}
 
-	parts := strings.Split(data.Value, ",")
-	for i := range parts {
-		parts[i] = strings.TrimSpace(parts[i])
+	raw := strings.Split(data.Value, ",")
+	out := make([]string, 0, len(raw))
+	for _, v := range raw {
+		t := sanitizeType(v)
+		if t != "" {
+			out = append(out, t)
+		}
 	}
-
-	return parts, nil
+	return out, nil
 }
 
 func listNodeEntities(node *global.Node, entity string) ([]map[string]interface{}, error) {
-	url := fmt.Sprintf("http://%s:%d/api/%s", node.HTTP.Host, node.HTTP.Port, entity)
-	status, body, err := forward.ForwardRequest("GET", url, "")
+	e := url.PathEscape(sanitizeType(entity))
+	urlStr := fmt.Sprintf("http://%s:%d/api/%s", node.HTTP.Host, node.HTTP.Port, e)
+	status, body, err := forward.ForwardRequest("GET", urlStr, "")
 	if err != nil || status >= 300 {
 		return nil, err
 	}
@@ -84,13 +90,21 @@ func sendEntityToNode(entity map[string]interface{}, node *global.Node, entityTy
 	if err != nil {
 		return err
 	}
-	url := fmt.Sprintf("http://%s:%d/api/%s", node.HTTP.Host, node.HTTP.Port, entityType)
-	_, _, err = forward.ForwardRequest("POST", url, string(payload))
+	e := url.PathEscape(sanitizeType(entityType))
+	urlStr := fmt.Sprintf("http://%s:%d/api/%s", node.HTTP.Host, node.HTTP.Port, e)
+	_, _, err = forward.ForwardRequest("POST", urlStr, string(payload))
 	return err
 }
 
 func resetNodeEntity(node *global.Node, entity string) error {
-	url := fmt.Sprintf("http://%s:%d/%s", node.HTTP.Host, node.HTTP.Port, entity)
-	_, _, err := forward.ForwardRequest("DELETE", url, "")
+	e := url.PathEscape(sanitizeType(entity))
+	urlStr := fmt.Sprintf("http://%s:%d/api/%s", node.HTTP.Host, node.HTTP.Port, e)
+	_, _, err := forward.ForwardRequest("DELETE", urlStr, "")
 	return err
+}
+
+func sanitizeType(s string) string {
+	s = strings.ReplaceAll(s, "\r", "")
+	s = strings.ReplaceAll(s, "\n", "")
+	return strings.TrimSpace(s)
 }
