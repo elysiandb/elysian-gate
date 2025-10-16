@@ -75,4 +75,4 @@ restart-slaves:
 	@echo "♻️  Slaves restart complete."
 
 api_benchmark:
-	BASE_URL=http://localhost:8899 KEYS=5000 VUS=200 DURATION=10s k6 run elysian_api_k6.js
+	BASE_URL=http://localhost:8899 KEYS=5000 VUS=200 DURATION=30s k6 run elysian_api_k6.js

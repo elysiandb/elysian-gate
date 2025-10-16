@@ -34,7 +34,6 @@ func SendWriteRequestToMaster(method string, path string, payload string) (int, 
 		return 0, "", fmt.Errorf("no master node available for write")
 	}
 
-	// toute écriture rend les slaves dirty
 	state.MarkAllSlavesDirty()
 
 	url := fmt.Sprintf("http://%s:%d%s", master.HTTP.Host, master.HTTP.Port, path)
@@ -67,7 +66,6 @@ func GetReadRequestNode() *global.Node {
 	hasPending := len(pendingOps) > 0
 	mu.Unlock()
 
-	// Si des opérations d’écriture non synchronisées → lecture sur master
 	if hasPending {
 		return getMaster()
 	}
@@ -91,7 +89,6 @@ func getFreshReadySlaves() []global.Node {
 			continue
 		}
 		if !state.IsSlaveFresh(n.Name) {
-			// un nouveau slave Ready mais non marqué → on le rend fresh
 			state.SetSlaveAsFresh(&n)
 		}
 		if !state.IsSlaveSyncing(n.Name) {
