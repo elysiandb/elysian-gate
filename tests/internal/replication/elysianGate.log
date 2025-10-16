@@ -1,0 +1,30 @@
+[INFO] 2025-10-16 11:54:56 Listing entity types from http://127.0.0.1:36377/kv/api:entity:types:list
+[INFO] 2025-10-16 11:54:56 Replicating the following entity types from master to node: [article]
+
+[INFO] 2025-10-16 11:54:56 Listing entity types from http://127.0.0.1:44543/kv/api:entity:types:list
+[INFO] 2025-10-16 11:54:56 Replicating the following entity types from master to node: []
+
+[INFO] 2025-10-16 11:55:01 Listing entity types from http://127.0.0.1:33005/kv/api:entity:types:list
+[INFO] 2025-10-16 11:55:01 Replicating the following entity types from master to node: [article]
+
+[INFO] 2025-10-16 11:55:01 Listing entity types from http://127.0.0.1:34473/kv/api:entity:types:list
+[INFO] 2025-10-16 11:55:01 Replicating the following entity types from master to node: []
+
+[INFO] 2025-10-16 11:56:05 Listing entity types from http://127.0.0.1:33435/kv/api:entity:types:list
+[INFO] 2025-10-16 11:56:05 Replicating the following entity types from master to node: [article]
+
+[INFO] 2025-10-16 11:56:05 Listing entity types from http://127.0.0.1:1/kv/api:entity:types:list
+[INFO] 2025-10-16 11:56:05 Replicating the following entity types from master to node: []
+
+[INFO] 2025-10-16 11:57:50 Listing entity types from http://127.0.0.1:43577/kv/api:entity:types:list
+[INFO] 2025-10-16 11:57:50 Replicating the following entity types from master to node: [article]
+
+[INFO] 2025-10-16 11:57:50 Listing entity types from http://127.0.0.1:1/kv/api:entity:types:list
+[INFO] 2025-10-16 11:57:50 Replicating the following entity types from master to node: []
+
+[INFO] 2025-10-16 11:59:48 Listing entity types from http://127.0.0.1:40459/kv/api:entity:types:list
+[INFO] 2025-10-16 11:59:48 Replicating the following entity types from master to node: [article]
+
+[INFO] 2025-10-16 11:59:48 Listing entity types from http://127.0.0.1:1/kv/api:entity:types:list
+[INFO] 2025-10-16 11:59:48 Replicating the following entity types from master to node: []
+

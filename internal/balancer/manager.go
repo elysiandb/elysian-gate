@@ -1,6 +1,7 @@
 package balancer
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -26,6 +27,37 @@ var (
 	pendingOps []Operation
 	mu         sync.Mutex
 )
+
+func SendReadRequest(path string, query string) (int, []byte, error) {
+	nodes := GetReadRequestNodes()
+	if len(nodes) == 0 {
+		return 503, []byte(`{"error":"no available node"}`), fmt.Errorf("no available node")
+	}
+
+	for _, node := range nodes {
+		logger.Info(fmt.Sprintf("trying read from node %s", node.Name))
+		url := fmt.Sprintf("http://%s:%d%s", node.HTTP.Host, node.HTTP.Port, path)
+		if query != "" {
+			url += "?" + query
+		}
+
+		status, body, err := forward.ForwardRequest("GET", url, "")
+		if err != nil || status >= 300 {
+			logger.Error(fmt.Sprintf("read from node %s failed: %v", node.Name, err))
+			continue
+		}
+
+		var formatted any
+		if json.Unmarshal([]byte(body), &formatted) == nil {
+			data, _ := json.MarshalIndent(formatted, "", "  ")
+			return status, data, nil
+		}
+
+		return status, []byte(body), nil
+	}
+
+	return 502, []byte(`{"error":"all nodes failed"}`), fmt.Errorf("all nodes failed")
+}
 
 func SendWriteRequestToMaster(method string, path string, payload string) (int, string, error) {
 	master := getMaster()
@@ -61,25 +93,35 @@ func SendWriteRequestToMaster(method string, path string, payload string) (int, 
 	return status, body, nil
 }
 
-func GetReadRequestNode() *global.Node {
+func GetReadRequestNodes() []*global.Node {
 	mu.Lock()
 	hasPending := len(pendingOps) > 0
 	mu.Unlock()
 
+	nodesList := []*global.Node{}
+
 	if hasPending {
-		return getMaster()
+		master := getMaster()
+		if master != nil {
+			nodesList = append(nodesList, master)
+		}
+		return nodesList
 	}
 
 	slaves := getFreshReadySlaves()
-	if len(slaves) == 0 {
-		logger.Info("no fresh slaves, read from master")
-		return getMaster()
+	if len(slaves) > 0 {
+		rand.Shuffle(len(slaves), func(i, j int) { slaves[i], slaves[j] = slaves[j], slaves[i] })
+		for i := range slaves {
+			nodesList = append(nodesList, &slaves[i])
+		}
 	}
 
-	idx := rand.Intn(len(slaves))
-	chosen := &slaves[idx]
-	logger.Info(fmt.Sprintf("read from slave %s", chosen.Name))
-	return chosen
+	master := getMaster()
+	if master != nil {
+		nodesList = append(nodesList, master)
+	}
+
+	return nodesList
 }
 
 func getFreshReadySlaves() []global.Node {

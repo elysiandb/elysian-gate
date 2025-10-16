@@ -1,7 +1,9 @@
-.PHONY: clear cluster stop restart api_benchmark
+.PHONY: clear cluster stop restart api_benchmark test test-cover
 
 BIN=./elysiandb/bin/elysiandb
 CONF_DIR=./elysiandb/config
+
+COVERPKG := $(shell go list ./internal/... | paste -sd, -)
 
 clear:
 	rm -rf /tmp/elysian*
@@ -76,3 +78,10 @@ restart-slaves:
 
 api_benchmark:
 	BASE_URL=http://localhost:8899 KEYS=5000 VUS=200 DURATION=30s k6 run elysian_api_k6.js
+
+test:
+	@go test ./tests/... -v
+
+test-cover:
+	@go test -coverpkg=$(COVERPKG) ./tests/... -coverprofile=coverage.out -count=1
+	@go tool cover -func=coverage.out | tail -n1
