@@ -2,19 +2,19 @@
 
 ### Overview
 
-**ElysianGate** is a lightweight, high-performance gateway designed to orchestrate and balance multiple **ElysianDB** nodes. It manages request routing, replication, and real-time monitoring, enabling distributed key-value clusters to behave as one unified system (only works for ElysianDB automatic rest api mode, the key-value mode will be implemented soon).
+ElysianGate is a lightweight, high-performance gateway designed to orchestrate and balance multiple ElysianDB nodes. It manages request routing, replication, and real-time monitoring, enabling distributed key-value clusters to behave as one unified system. Currently, it supports ElysianDB's automatic REST API mode, with native key-value mode replication planned for future releases.
 
 ---
 
 ### Key Features
 
-* **Automatic Cluster Bootstrapping** — Optionally launch all ElysianDB nodes at startup.
-* **Intelligent Read/Write Routing** — Routes writes to the master and distributes reads across fresh slaves.
-* **Replication Engine** — Synchronizes recent write operations across slave nodes for consistency.
-* **Real-Time Health Monitoring** — Continuously checks node status via HTTP and TCP.
-* **Dual Transport Awareness** — Supports both **HTTP** and **TCP** endpoints per node.
-* **Zero Configuration** — Simple YAML-based setup for instant startup.
-* **k6 Benchmark Suite** — Included for stress and performance testing.
+* Automatic Cluster Bootstrapping — Optionally launch all ElysianDB nodes at startup.
+* Intelligent Read/Write Routing — Routes writes to the master and distributes reads across synchronized slaves.
+* Replication Engine — Automatically synchronizes master data to slave nodes at boot and when new nodes join.
+* Real-Time Health Monitoring — Continuously checks node state through both HTTP and TCP.
+* Dual Transport Support — Each node can expose both HTTP and TCP interfaces.
+* YAML-Based Configuration — Simple, declarative setup for quick cluster orchestration.
+* Built-in Benchmarking — k6 test scripts available for stress and performance evaluation.
 
 ---
 
@@ -44,6 +44,7 @@ gateway:
   http:
     host: "0.0.0.0"
     port: 8899
+  synchronizationInterval: 1
 ```
 
 ---
@@ -72,11 +73,11 @@ make cluster
 
 ### Architecture
 
-* **Configuration Loader** — Parses YAML and loads gateway and node definitions.
-* **Cluster Manager** — Maintains in-memory registry of node states and roles.
-* **Replication Balancer** — Tracks pending write operations and synchronizes them with slaves.
-* **Monitoring Engine** — Performs continuous health checks and logs node status changes.
-* **HTTP Gateway Server** — Built with **fasthttp** for ultra-low latency routing.
+* Configuration Loader — Parses YAML and loads gateway and node definitions.
+* Cluster Manager — Maintains the registry of nodes and tracks their status.
+* Replication Manager — Ensures all slave nodes are consistent with the master.
+* Health Monitor — Periodically verifies node liveness and readiness.
+* HTTP Gateway Server — Uses fasthttp for low-latency routing and concurrency.
 
 ---
 
@@ -84,14 +85,13 @@ make cluster
 
 ```
 15:42:03
-Node master (node1) [HTTP 0.0.0.0:8090 | TCP 0.0.0.0:8890] : 🟢 HTTP up | 🟢 TCP up
-Node slave (node2) [HTTP 0.0.0.0:8091 | TCP 0.0.0.0:8891] : 🔴 HTTP down | 🟢 TCP up
-───────────────────────────────────────────────
+Node node1 (master) [HTTP 0.0.0.0:8090 | TCP 0.0.0.0:8890] : HTTP up | TCP up | Ready
+Node node2 (slave) [HTTP 0.0.0.0:8091 | TCP 0.0.0.0:8891] : HTTP up | TCP up | Ready
+Node node3 (slave) [HTTP 0.0.0.0:8092 | TCP 0.0.0.0:8892] : HTTP up | TCP up | Ready
 ```
 
 ---
 
 ### Philosophy
 
-> *ElysianGate turns distributed ElysianDB clusters into a single, coherent system — effortless setup, instant visibility, and consistent performance by design.*
-
+ElysianGate transforms distributed ElysianDB clusters into a single, coherent system. It focuses on simplicity, visibility, and reliability, ensuring every node stays synchronized and every query is consistently served.
