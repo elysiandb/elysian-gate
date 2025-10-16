@@ -2,10 +2,10 @@ package boot
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/elysiandb/elysian-gate/internal/configuration"
+	"github.com/elysiandb/elysian-gate/internal/logger"
 	"github.com/elysiandb/elysian-gate/internal/routing"
 	"github.com/fasthttp/router"
 	"github.com/valyala/fasthttp"
@@ -27,10 +27,10 @@ func InitHTTP() {
 	go func() {
 		host := configuration.Config.Gateway.HTTP.Host
 		port := configuration.Config.Gateway.HTTP.Port
-		log.Printf("Starting ElysianGate HTTP server on %s:%d", host, port)
+		logger.Info(fmt.Sprintf("Starting ElysianGate HTTP server on %s:%d", host, port))
 
 		if err := server.ListenAndServe(fmt.Sprintf("%s:%d", host, port)); err != nil {
-			log.Fatalf("server error: %v", err)
+			logger.Error(fmt.Sprintf("server error: %v", err))
 		}
 	}()
 }

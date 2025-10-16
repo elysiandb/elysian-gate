@@ -8,7 +8,10 @@ import (
 	"time"
 
 	"github.com/elysiandb/elysian-gate/internal/forward"
+	"github.com/elysiandb/elysian-gate/internal/global"
+	"github.com/elysiandb/elysian-gate/internal/logger"
 	"github.com/elysiandb/elysian-gate/internal/nodes"
+	"github.com/elysiandb/elysian-gate/internal/state"
 )
 
 type Operation struct {
@@ -22,19 +25,22 @@ var (
 	lastSeq    int64
 	pendingOps []Operation
 	mu         sync.Mutex
-	freshMu    sync.Mutex
-	slaveFresh = map[string]bool{}
 )
 
 func SendWriteRequestToMaster(method string, path string, payload string) (int, string, error) {
 	master := getMaster()
 	if master == nil {
+		logger.Error("no master node available for write")
 		return 0, "", fmt.Errorf("no master node available for write")
 	}
+
+	// toute écriture rend les slaves dirty
+	state.MarkAllSlavesDirty()
 
 	url := fmt.Sprintf("http://%s:%d%s", master.HTTP.Host, master.HTTP.Port, path)
 	status, body, err := forward.ForwardRequest(method, url, payload)
 	if err != nil || status >= 300 {
+		logger.Error(fmt.Sprintf("write to master failed: %v", err))
 		return status, body, err
 	}
 
@@ -43,73 +49,87 @@ func SendWriteRequestToMaster(method string, path string, payload string) (int, 
 		finalPayload = body
 	}
 
-	stackOperation(Operation{
+	mu.Lock()
+	op := Operation{
 		Method:  method,
 		Path:    path,
 		Payload: finalPayload,
-	})
-
-	SetSlavesAsDirty()
+		Seq:     atomic.AddInt64(&lastSeq, 1),
+	}
+	pendingOps = append(pendingOps, op)
+	mu.Unlock()
 
 	return status, body, nil
 }
 
-func GetReadRequestNode() *nodes.Node {
+func GetReadRequestNode() *global.Node {
 	mu.Lock()
-	defer mu.Unlock()
-	if len(pendingOps) > 0 {
-		return getMaster()
-	}
-	slaves := getFreshSlaves()
-	if len(slaves) == 0 {
-		return getMaster()
-	}
-	idx := rand.Intn(len(slaves))
-	return &slaves[idx]
-}
-
-func stackOperation(op Operation) {
-	mu.Lock()
-	op.Seq = atomic.AddInt64(&lastSeq, 1)
-	pendingOps = append(pendingOps, op)
+	hasPending := len(pendingOps) > 0
 	mu.Unlock()
+
+	// Si des opérations d’écriture non synchronisées → lecture sur master
+	if hasPending {
+		return getMaster()
+	}
+
+	slaves := getFreshReadySlaves()
+	if len(slaves) == 0 {
+		logger.Info("no fresh slaves, read from master")
+		return getMaster()
+	}
+
+	idx := rand.Intn(len(slaves))
+	chosen := &slaves[idx]
+	logger.Info(fmt.Sprintf("read from slave %s", chosen.Name))
+	return chosen
 }
 
-func SetSlavesAsDirty() {
-	freshMu.Lock()
-	for i := range nodes.ElysianCluster.Nodes {
-		if nodes.ElysianCluster.Nodes[i].Role != "master" {
-			slaveFresh[nodes.ElysianCluster.Nodes[i].Name] = false
+func getFreshReadySlaves() []global.Node {
+	res := []global.Node{}
+	for _, n := range nodes.ElysianCluster.Nodes {
+		if n.Role != "slave" || !n.Ready {
+			continue
+		}
+		if !state.IsSlaveFresh(n.Name) {
+			// un nouveau slave Ready mais non marqué → on le rend fresh
+			state.SetSlaveAsFresh(&n)
+		}
+		if !state.IsSlaveSyncing(n.Name) {
+			res = append(res, n)
 		}
 	}
-	freshMu.Unlock()
+	return res
 }
 
 func SyncSlaves() {
 	mu.Lock()
 	ops := append([]Operation(nil), pendingOps...)
 	mu.Unlock()
-
 	if len(ops) == 0 {
 		return
 	}
 
 	var wg sync.WaitGroup
-	allSyncedForAll := true
+	allSynced := true
 	var allMu sync.Mutex
 
 	for i := range nodes.ElysianCluster.Nodes {
 		n := &nodes.ElysianCluster.Nodes[i]
-		if n.Role != "master" {
+		if n.Role != "master" && n.Ready {
+			if state.IsSlaveSyncing(n.Name) {
+				continue
+			}
 			wg.Add(1)
-			go func(nn *nodes.Node) {
+			state.MarkSlaveSyncing(n.Name, true)
+			go func(nn *global.Node) {
 				defer wg.Done()
+				defer state.MarkSlaveSyncing(nn.Name, false)
 				ok := applyOpsToSlave(nn, ops)
 				allMu.Lock()
 				if ok {
-					SetSlaveAsFresh(nn)
+					state.SetSlaveAsFresh(nn)
 				} else {
-					allSyncedForAll = false
+					allSynced = false
 				}
 				allMu.Unlock()
 			}(n)
@@ -117,53 +137,32 @@ func SyncSlaves() {
 	}
 	wg.Wait()
 
-	if allSyncedForAll {
-		ClearPendingOperations()
+	if allSynced {
+		mu.Lock()
+		pendingOps = nil
+		mu.Unlock()
 	}
 }
 
-func applyOpsToSlave(nn *nodes.Node, ops []Operation) bool {
+func applyOpsToSlave(nn *global.Node, ops []Operation) bool {
 	for _, op := range ops {
 		url := fmt.Sprintf("http://%s:%d%s", nn.HTTP.Host, nn.HTTP.Port, op.Path)
 		status, _, err := forward.ForwardRequest(op.Method, url, op.Payload)
 		if err != nil || status >= 300 {
+			logger.Error(fmt.Sprintf("sync failed on slave %s: %v", nn.Name, err))
 			return false
 		}
 	}
 	return true
 }
 
-func ClearPendingOperations() {
-	mu.Lock()
-	pendingOps = nil
-	mu.Unlock()
-}
-
-func SetSlaveAsFresh(n *nodes.Node) {
-	freshMu.Lock()
-	slaveFresh[n.Name] = true
-	freshMu.Unlock()
-}
-
-func getMaster() *nodes.Node {
+func getMaster() *global.Node {
 	for i := range nodes.ElysianCluster.Nodes {
 		if nodes.ElysianCluster.Nodes[i].Role == "master" {
 			return &nodes.ElysianCluster.Nodes[i]
 		}
 	}
 	return nil
-}
-
-func getFreshSlaves() []nodes.Node {
-	freshMu.Lock()
-	defer freshMu.Unlock()
-	slaves := []nodes.Node{}
-	for _, n := range nodes.ElysianCluster.Nodes {
-		if n.Role == "slave" && slaveFresh[n.Name] {
-			slaves = append(slaves, n)
-		}
-	}
-	return slaves
 }
 
 func init() {
